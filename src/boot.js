@@ -4,6 +4,7 @@
   const state = scroller.state;
   const log = scroller.log;
   const virtualizer = scroller.virtualizer;
+  let promoInterval = null;
 
   // ---- Storage: enabled + debug flags -----------------------------------
 
@@ -11,13 +12,39 @@
     chrome.storage.sync.get({ enabled: true, debug: false }, (data) => {
       state.enabled = data.enabled;
       state.debug = data.debug;
+
+      startPromoLogging();
     });
 
     chrome.storage.onChanged.addListener((changes, areaName) => {
       if (areaName !== "sync") return;
       if (changes.enabled) state.enabled = changes.enabled.newValue;
-      if (changes.debug) state.debug = changes.debug.newValue;
+      if (changes.debug) {
+        state.debug = changes.debug.newValue;
+        scroller.logPromoMessage();
+      }
     });
+  }
+
+  // ---- Shameless self promotion -----------------------------------
+  function startPromoLogging() {
+    if (!state.debug) return;
+
+    // Prevent multiple intervals
+    if (promoInterval) return;
+
+    // Log immediately once
+    scroller.logPromoMessage();
+
+    promoInterval = setInterval(() => {
+      scroller.logPromoMessage();
+    }, (5 * 60000)); // every 5 minutes
+  }
+  function stopPromoLogging() {
+    if (promoInterval) {
+      clearInterval(promoInterval);
+      promoInterval = null;
+    }
   }
 
   // ---- Popup stats API ---------------------------------------------------
@@ -31,7 +58,7 @@
       totalMessages: statsSnapshot.totalMessages,
       renderedMessages: statsSnapshot.renderedMessages,
       memorySavedPercent: statsSnapshot.memorySavedPercent,
-      enabled: state.enabled
+      enabled: state.enabled,
     });
     return true;
   });
@@ -47,6 +74,9 @@
     virtualizer.bootVirtualizer();
     virtualizer.startUrlWatcher();
   }
+
+  // Auto-clean promo-logging when page unloads
+  window.addEventListener("beforeunload", stopPromoLogging);
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", initialize);

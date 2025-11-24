@@ -68,4 +68,27 @@ window.ChatGPTVirtualScroller = window.ChatGPTVirtualScroller || {};
     if (!scroller.state.debug) return;
     console.log("[ChatGPT Virtual Scroller]", ...logArguments);
   };
+
+  scroller.logPromoMessage = function logPromoMessage() {
+    if (!scroller.state.debug) return;
+    console.log(
+      `%c
+┌─────────────────────────────────────────┐
+│  ChatGPT Lag Fixer (debug mode enabled) │
+└─────────────────────────────────────────┘
+Made by Bram van der Giessen
+
+You are seeing this message because debug mode is enabled for the chrome extension.
+To disable debug mode, open the extension popup and uncheck "Enable debug mode".
+
+If you enjoy this project, please consider giving it a ⭐ on GitHub:
+https://github.com/bramgiessen
+
+🧑‍💻 If you need a skilled developer, feel free to reach out to me on:
+https://bramgiessen.com
+`,
+      "color:#4c8bf5; font-size:15px; font-weight:bold;"
+    );
+  };
+
 })();
